@@ -26,6 +26,13 @@
 .stopped { color: #CBD5E1; }
 .stopped .dot { background: var(--neutral); }
 
+/* CONECTIVIDAD */
+.online { background: rgba(0, 243, 255, 0.1); border-color: rgba(0, 243, 255, 0.2); color: #00f3ff; }
+.online .dot { background: #00f3ff; box-shadow: 0 0 8px #00f3ff; }
+
+.offline { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: var(--neutral); }
+.offline .dot { background: var(--neutral); }
+
 .fault { color: #f8fafc; }
 .fault .dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 0.5s infinite; }
 

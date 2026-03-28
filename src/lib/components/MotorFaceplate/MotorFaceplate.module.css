@@ -1,0 +1,106 @@
+.backdrop {
+  position: fixed; inset: 0; background: rgba(0, 4, 15, 0.85);
+  backdrop-filter: blur(8px); z-index: 1000;
+  display: flex; justify-content: center; align-items: center; padding: 1rem;
+}
+
+.faceplate {
+  width: 100%; max-width: 650px;
+  background: linear-gradient(145deg, #151921 0%, #0d1017 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.5rem; padding: 1.5rem;
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+  position: relative; overflow: hidden;
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.titleGroup h2 { color: #fff; font-size: 1.4rem; letter-spacing: -0.5px; }
+
+/* 📡 PANTALLA OLED */
+.annunciator {
+  background: #000; border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;
+  min-height: 60px; display: flex; flex-direction: column; justify-content: center;
+  position: relative; box-shadow: inset 0 0 15px rgba(0,0,0,1);
+}
+
+.msg { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-bottom: 0.25rem; }
+.msgInfo { color: var(--success); }
+.msgWarn { color: #ffcc00; }
+.msgError { color: var(--danger); text-shadow: 0 0 10px var(--danger); }
+
+/* LAYOUT */
+.mainGrid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; }
+.controlColumn, .diagColumn { display: flex; flex-direction: column; gap: 1rem; }
+
+.sectionBox {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem; padding: 1rem;
+}
+
+.sectionTitle {
+  font-size: 0.6rem; color: var(--neutral);
+  text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 0.75rem; display: block;
+}
+
+/* BOTONES */
+.btnGrid { display: grid; gap: 0.5rem; }
+.btnRow { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+.modeBtn, .cmdBtn {
+  background: #1c212b; border: 1px solid rgba(255,255,255,0.1);
+  color: #a0a6b5; padding: 0.75rem; border-radius: 0.65rem;
+  font-weight: 700; font-size: 0.7rem; transition: all 0.2s ease; cursor: pointer;
+}
+
+.modeBtn:hover, .cmdBtn:hover { transform: translateY(-2px); background: #252a35; }
+
+/* EFECTOS NEÓN */
+.active { 
+  background: var(--accent) !important; color: #000 !important; 
+  border: 2px solid #00f3ff !important;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset 0 0 10px rgba(135, 255, 255, 0.9) !important;
+  font-weight: 900;
+}
+
+.pulsing { animation: pulseNeon 1s ease-in-out infinite !important; z-index: 100; }
+
+@keyframes pulseNeon {
+  0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
+  50% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.8); border-color: #00f3ff; transform: scale(1.02); }
+  100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
+}
+
+.start { border-color: rgba(0, 255, 127, 0.3) !important; color: #00ff7f !important; }
+.stop { border-color: rgba(255, 64, 129, 0.3) !important; color: #ff4081 !important; }
+.reset { grid-column: span 2; background: #252a35; }
+
+/* 🔴 LEDS */
+.ledRow { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.led { width: 8px; height: 8px; border-radius: 50%; background: #2a2d3e; }
+.ledOnSuccess { background: var(--success); box-shadow: 0 0 10px var(--success); }
+.ledOnDanger { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+.ledLabel { font-size: 0.75rem; color: #fff; opacity: 0.8; }
+
+.closeBtn { background: none; border: none; font-size: 1.5rem; color: #4e566d; cursor: pointer; }
+.closeBtn:hover { color: #fff; transform: rotate(90deg); transition: 0.3s; }
+
+/* 📱 RESPONSIVIDAD MÓVIL */
+@media (max-width: 600px) {
+  .faceplate { padding: 1rem; border-radius: 1rem; }
+  .mainGrid { grid-template-columns: 1fr; gap: 1rem; }
+  .titleGroup h2 { font-size: 1.2rem; }
+  .annunciator { min-height: 50px; padding: 0.75rem; }
+  .msg { font-size: 0.75rem; }
+  .modeBtn, .cmdBtn { padding: 0.6rem; font-size: 0.65rem; }
+}
+
+.maintOverlay {
+
+  position: absolute; inset: 0; background: rgba(0, 4, 15, 0.95);
+  z-index: 100; display: flex; flex-direction: column; justify-content: center;
+  align-items: center; padding: 2rem; text-align: center;
+}
+.maintOverlay h3 { color: var(--accent); margin-bottom: 0.5rem; }
+.cancelLink { margin-top: 1.5rem; color: var(--danger); cursor: pointer; font-size: 0.75rem; text-decoration: underline; }

@@ -1,5 +1,22 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# Instrucciones de Agente: Especialista en SCADA Frontend (Next.js)
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+Eres un diseñador de interfaces industriales (HMI) y desarrollador senior de React. Tu responsabilidad es la **plc-component-library**.
+
+## 🎨 Visión Estética
+El objetivo es crear un SCADA moderno tipo "Control Room" de SpaceX o Tesla.
+- **Paleta de Colores**: Fondo ultra oscuro (`#0f172a`), bordes sutiles y estados neón brillantes (`#22c55e` para OK, `#ef4444` para Alarma).
+- **Glassmorphism**: Usa fondos con translucidez y desenfoque (`backdrop-filter: blur(8px)`).
+- **Animaciones**: Todo cambio de estado debe tener una micro-transacción suave. Los motores deben girar físicamente cuando el tag `RUN` sea true.
+
+## 🏗️ Estructura de Componentes
+- Todos los componentes deben ser **"stateless"** (recibir datos por props).
+- Usa **CSS Modules** para evitar conflictos de estilos.
+- Cada dispositivo debe tener su carpeta (`/Motor`, `/Valve`, `/Gauge`).
+
+## 📡 Integración de Datos (Real-time)
+- No uses polling desde el frontend. Suscríbete al servidor de WebSockets en el puerto 3000.
+- Escucha el evento `tagValueUpdate`.
+- El mapeo entre el ID del tag y el componente debe ser configurable.
+
+## 🤝 Coordinación con el Backend
+- El backend envía tags escalados. No realices cálculos matemáticos de escalado en el frontend; confía en el valor que viene del servidor.

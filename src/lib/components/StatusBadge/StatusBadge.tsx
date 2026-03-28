@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './StatusBadge.module.css';
 
-export type StatusType = 'running' | 'stopped' | 'fault' | 'warning' | 'idle';
+export type StatusType = 'running' | 'stopped' | 'fault' | 'warning' | 'idle' | 'online' | 'offline';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -17,9 +17,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
       case 'fault': return 'Falla';
       case 'warning': return 'Advertencia';
       case 'idle': return 'Espera';
+      case 'online': return 'ONLINE';
+      case 'offline': return 'OFFLINE';
       default: return 'Desconocido';
     }
   };
+
 
   return (
     <div className={`${styles.badge} ${styles[status]}`}>
@@ -28,3 +31,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
     </div>
   );
 };
+
+export default StatusBadge;
+

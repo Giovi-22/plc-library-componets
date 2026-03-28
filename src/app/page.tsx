@@ -1,91 +1,122 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+import { API_URL, SOCKET_URL } from '@/lib/config';
 import { Motor } from '@/lib/components/Motor/Motor';
-import { StatusType } from '@/lib/components/StatusBadge/StatusBadge';
+import { StatusBadge } from '@/lib/components/StatusBadge/StatusBadge';
+import { MotorFaceplate } from '@/lib/components/MotorFaceplate/MotorFaceplate';
+
+interface Device {
+  id: string;
+  name: string;
+  type: string;
+  state: any;
+}
 
 export default function Home() {
-  const [motor1Status, setMotor1Status] = useState<StatusType>('stopped');
-  const [motor1Rpm, setMotor1Rpm] = useState(0);
-  const [motor1Current, setMotor1Current] = useState(0);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [selectedMotor, setSelectedMotor] = useState<Device | null>(null);
+  const [workflows, setWorkflows] = useState<any>({});
 
-  const [motor2Status, setMotor2Status] = useState<StatusType>('fault');
-
-  // Simulation loop
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (motor1Status === 'running') {
-        setMotor1Rpm(prev => Math.min(prev + 50, 1450 + Math.random() * 20));
-        setMotor1Current(prev => 4.2 + Math.random() * 0.5);
-      } else if (motor1Status === 'stopped') {
-        setMotor1Rpm(prev => Math.max(prev - 100, 0));
-        setMotor1Current(0);
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [motor1Status]);
+    const socket = io(SOCKET_URL);
+
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
+
+    socket.on('deviceUpdate', (updatedDevice: Device) => {
+      setDevices((prev) => prev.map((d) => (d.id === updatedDevice.id ? updatedDevice : d)));
+    });
+
+    socket.on('maintenanceWorkflowUpdate', (data: { deviceId: string; workflow: any }) => {
+      setWorkflows((prev: any) => ({
+        ...prev,
+        [data.deviceId]: data.workflow
+      }));
+    });
+
+    const fetchDevices = async () => {
+      const res = await fetch(`${API_URL}/devices`);
+      const data = await res.json();
+      setDevices(data);
+    };
+
+    fetchDevices();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const handleSendCommand = async (signal: string, value: any) => {
+    if (!selectedMotor) return;
+    await fetch(`${API_URL}/devices/${selectedMotor.id}/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signal, value }),
+    });
+  };
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <header style={{ marginBottom: '3rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '1rem' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)' }}>
-          PLC Component Library
-        </h1>
-        <p style={{ color: 'var(--neutral)', marginTop: '0.5rem' }}>
-          Librería de dispositivos industriales para control de procesos.
-        </p>
+    <main style={{ padding: '3rem', minHeight: '100vh' }}>
+      <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent)' }}>
+            SCADA Central
+          </h1>
+          <p style={{ color: 'var(--neutral)', marginTop: '0.5rem' }}>
+            Arquitectura Orientada a Objetos PLC (UDT-S7 Mode)
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <button 
+            onClick={() => window.location.href = '/login'}
+            style={{ 
+              background: 'rgba(255,255,255,0.05)', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              padding: '0.6rem 1.2rem',
+              borderRadius: '0.75rem',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              color: 'rgba(255,255,255,0.5)',
+              cursor: 'pointer'
+            }}
+          >
+            🔑 CAMBIAR ROL
+          </button>
+          <StatusBadge status={isConnected ? 'online' : 'offline'} />
+        </div>
       </header>
 
-      <section>
-        <h2 style={{ marginBottom: '1.5rem', opacity: 0.8 }}>Motores y Actuadores</h2>
-        <div className="dashboard-grid">
-          <Motor 
-            id="MOT-01" 
-            name="Elevador Principal" 
-            status={motor1Status}
-            rpm={Math.round(motor1Rpm)}
-            current={motor1Current}
-            onStart={() => setMotor1Status('running')}
-            onStop={() => setMotor1Status('stopped')}
-          />
-
-          <Motor 
-            id="MOT-02" 
-            name="Bomba de Agua" 
-            status={motor2Status}
-            rpm={0}
-            current={0}
-            onStart={() => setMotor2Status('running')}
-            onStop={() => setMotor2Status('stopped')}
-          />
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
+        {devices.map((device) => {
+          const status = device.state?.STAT_FAULT || device.state?.FAIL_TERMICO ? 'fault' : 
+                         device.state?.STAT_RUNNING ? 'running' : 'stopped';
           
-          <Motor 
-            id="MOT-03" 
-            name="Ventilador Enfriamiento" 
-            status="idle"
-            rpm={0}
-            current={0}
-          />
-        </div>
+          return (
+            <div key={device.id} onClick={() => setSelectedMotor(device)}>
+              <Motor 
+                id={device.id} 
+                name={device.name} 
+                status={status}
+              />
+            </div>
+          );
+        })}
       </section>
 
-      <section style={{ marginTop: '3rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', opacity: 0.8 }}>Valvulas y Sensores (En Desarrollo)</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <div className="card glass" style={{ flex: 1, padding: '2rem', textAlign: 'center' }}>
-            <p style={{ color: 'var(--neutral)' }}>Sensor de Presión [PT-101]</p>
-            <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--success)' }}>12.4 <small>BAR</small></div>
-          </div>
-          <div className="card glass" style={{ flex: 1, padding: '2rem', textAlign: 'center' }}>
-            <p style={{ color: 'var(--neutral)' }}>Válvula Principal [XV-101]</p>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--danger)' }}>CERRADA</div>
-          </div>
-        </div>
-      </section>
-
-      <footer style={{ marginTop: '4rem', opacity: 0.5, fontSize: '0.8rem', textAlign: 'center' }}>
-        &copy; 2026 Molinos - PLC Library Project
-      </footer>
+      {selectedMotor && (
+        <MotorFaceplate 
+          id={selectedMotor.id}
+          name={selectedMotor.name}
+          state={devices.find(d => d.id === selectedMotor.id)?.state || {}}
+          workflow={workflows[selectedMotor.id]}
+          onSendCommand={handleSendCommand}
+          onClose={() => setSelectedMotor(null)}
+        />
+      )}
     </main>
   );
 }
