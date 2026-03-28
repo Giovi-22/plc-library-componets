@@ -86,7 +86,7 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
       <div className={styles.faceplate}>
         <header className={styles.header}>
           <div className={styles.titleGroup}>
-            <h2>{name}</h2>
+            <h2>{name || id}</h2>
             <div className={styles.modeBadge}>
               {modeStatus === 1 ? 'Modo: LOCAL' : modeStatus === 2 ? 'Modo: REMOTO' : 'Modo: MANTO'}
             </div>
