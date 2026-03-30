@@ -35,17 +35,17 @@ export default function ConfigPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
+      <div className="glass" style={styles.card}>
         <div style={styles.header}>
           <svg style={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
           </svg>
-          <h1 style={styles.title}>Conexión al Servidor</h1>
+          <h1 style={styles.title}>Configuración de Red</h1>
         </div>
 
         <p style={styles.subtitle}>
-          Si el Backend de Node.js (Servidor SCADA) está corriendo en una máquina diferente
-          al servidor React Next.js, por favor indica su dirección IP.
+          Si el Servidor Node.js (Driver SCADA) está corriendo en una máquina diferente
+          al Front-End de Operación, especifica su ruta IP local.
         </p>
 
         <div style={styles.formGroup}>
@@ -61,13 +61,13 @@ export default function ConfigPage() {
 
         <div style={styles.buttonGroup}>
           <button onClick={handleSave} style={{...styles.btn, ...styles.btnPrimary}}>
-            Guardar y Conectar
+            Guardar IP y Conectar
           </button>
           <button onClick={handleReset} style={{...styles.btn, ...styles.btnSecondary}}>
-            Usar Predeterminada (Misma Máquina)
+            Restablecer a Localhost
           </button>
           <button onClick={() => router.push('/')} style={{...styles.btn, ...styles.btnGhost}}>
-            Cancelar
+            Volver a SCADA
           </button>
         </div>
       </div>
@@ -81,18 +81,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f172a',
-    fontFamily: '"Geist", "Inter", sans-serif',
+    backgroundColor: 'var(--background)',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
     padding: '20px'
   },
   card: {
-    backgroundColor: '#1e293b',
     borderRadius: '16px',
     padding: '40px',
     width: '100%',
     maxWidth: '500px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-    border: '1px solid #334155'
   },
   header: {
     display: 'flex',
@@ -103,16 +101,16 @@ const styles = {
   icon: {
     width: '32px',
     height: '32px',
-    color: '#3b82f6'
+    color: 'var(--accent)'
   },
   title: {
     margin: 0,
     fontSize: '24px',
-    fontWeight: '600',
-    color: '#f8fafc'
+    fontWeight: '800',
+    color: 'var(--accent)'
   },
   subtitle: {
-    color: '#94a3b8',
+    color: 'var(--neutral)',
     fontSize: '15px',
     lineHeight: '1.6',
     marginBottom: '32px'
@@ -124,16 +122,16 @@ const styles = {
     marginBottom: '32px'
   },
   label: {
-    color: '#cbd5e1',
-    fontWeight: '500',
+    color: 'var(--neutral)',
+    fontWeight: '600',
     fontSize: '14px'
   },
   input: {
     padding: '12px 16px',
     borderRadius: '8px',
-    backgroundColor: '#0f172a',
-    border: '1px solid #475569',
-    color: '#f8fafc',
+    backgroundColor: 'rgba(5, 7, 10, 0.8)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: 'var(--foreground)',
     fontSize: '16px',
     outline: 'none',
     transition: 'border-color 0.2s',
@@ -146,23 +144,24 @@ const styles = {
   btn: {
     padding: '14px',
     borderRadius: '8px',
-    fontWeight: '600',
+    fontWeight: '800',
     fontSize: '15px',
     cursor: 'pointer',
     border: 'none',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    textTransform: 'uppercase' as const,
   },
   btnPrimary: {
-    backgroundColor: '#3b82f6',
-    color: '#ffffff',
+    backgroundColor: 'var(--accent)',
+    color: '#000',
   },
   btnSecondary: {
-    backgroundColor: '#334155',
-    color: '#f8fafc'
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    color: 'var(--foreground)',
+    border: '1px solid rgba(255,255,255,0.1)'
   },
   btnGhost: {
     backgroundColor: 'transparent',
-    color: '#94a3b8',
-    border: '1px solid #475569'
+    color: 'var(--neutral)',
   }
 };
