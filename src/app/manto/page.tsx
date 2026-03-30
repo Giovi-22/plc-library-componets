@@ -66,21 +66,25 @@ export default function MaintenancePage() {
 
   const handleSendCommand = async (signal: string, value: any) => {
     if (!selectedDevice) return;
-    await fetch(`${API_URL}/devices/${selectedDevice.id}/command`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ signal, value }),
-    });
+    try {
+      await fetch(`${API_URL}/devices/${selectedDevice.id}/command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signal, value }),
+      });
+    } catch {}
   };
 
   const handleAddNote = async () => {
     if (!note.trim()) return;
-    await fetch(`${API_URL}/logs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: note, user: 'Técnico Mantenimiento' }),
-    });
-    setNote('');
+    try {
+      await fetch(`${API_URL}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: note, user: 'Técnico Mantenimiento' }),
+      });
+      setNote('');
+    } catch {}
   };
 
   const filteredDevices = (devices || []).filter(d => {

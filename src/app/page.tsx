@@ -19,6 +19,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [selectedMotor, setSelectedMotor] = useState<Device | null>(null);
   const [workflows, setWorkflows] = useState<any>({});
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
@@ -38,9 +39,15 @@ export default function Home() {
     });
 
     const fetchDevices = async () => {
-      const res = await fetch(`${API_URL}/devices`);
-      const data = await res.json();
-      setDevices(data);
+      try {
+        const res = await fetch(`${API_URL}/devices`);
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        const data = await res.json();
+        setDevices(data);
+        setErrorBanner(null);
+      } catch (err) {
+        setErrorBanner('🔴 No hay conexión con el Servidor Node.js. Verifica la IP instalada en la configuración de Red.');
+      }
     };
 
     fetchDevices();
@@ -52,11 +59,16 @@ export default function Home() {
 
   const handleSendCommand = async (signal: string, value: any) => {
     if (!selectedMotor) return;
-    await fetch(`${API_URL}/devices/${selectedMotor.id}/command`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ signal, value }),
-    });
+    try {
+      await fetch(`${API_URL}/devices/${selectedMotor.id}/command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signal, value }),
+      });
+      setErrorBanner(null);
+    } catch (err) {
+      setErrorBanner('🔴 Falló el envío del comando. El servidor no responde.');
+    }
   };
 
   return (
@@ -104,6 +116,21 @@ export default function Home() {
           <StatusBadge status={isConnected ? 'online' : 'offline'} />
         </div>
       </header>
+
+      {errorBanner && (
+        <div style={{
+          background: 'rgba(255, 64, 129, 0.15)',
+          border: '1px solid var(--danger)',
+          padding: '1rem',
+          borderRadius: '0.75rem',
+          color: 'var(--foreground)',
+          fontWeight: 600,
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
+          {errorBanner}
+        </div>
+      )}
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
         {devices.map((device) => {
