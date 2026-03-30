@@ -162,7 +162,7 @@ export default function MaintenancePage() {
             {filteredDevices.map((device) => {
               const isFault = device.state?.STAT_FAULT || device.state?.FAIL_TERMICO;
               const isRunning = device.state?.STAT_RUNNING;
-              const isManto = device.state?.CONF_MODE_SELECTED === 3;
+              const isManto = device.state?.CONF_MODE_SELECTED === 2; // Actualizado a 2 según PLC
               return (
                 <div key={device.id} style={styles.listItem(isManto)} className="list-item" onClick={() => setSelectedDevice(device)}>
                   <div style={styles.indicator(isRunning, isFault)} />

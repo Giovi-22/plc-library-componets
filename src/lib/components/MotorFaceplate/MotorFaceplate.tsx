@@ -18,7 +18,7 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
 
   const modeStatus = state.CONF_MODE_SELECTED || 0;
   const mode = pendingMode !== null ? pendingMode : modeStatus; 
-  const isMaintenance = modeStatus === 3;
+  const isMaintenance = modeStatus === 2; // Según PLC DB: 0=Local, 1=Remoto, 2=Manto
 
   const handleModeChange = (newMode: number) => {
 
@@ -88,7 +88,7 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
           <div className={styles.titleGroup}>
             <h2>{name || id}</h2>
             <div className={styles.modeBadge}>
-              {modeStatus === 1 ? 'Modo: LOCAL' : modeStatus === 2 ? 'Modo: REMOTO' : 'Modo: MANTO'}
+              {modeStatus === 0 ? 'Modo: LOCAL' : modeStatus === 1 ? 'Modo: REMOTO' : 'Modo: MANTO'}
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
@@ -103,12 +103,12 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
               <span className={styles.sectionTitle}>SELECCIÓN DE MODO</span>
               <div className={styles.btnGrid}>
                  <button 
-                  className={`${styles.modeBtn} ${modeStatus === 1 ? styles.active : ''} ${pendingMode === 1 ? styles.pulsing : ''}`}
-                  onClick={() => handleModeChange(1)}
+                  className={`${styles.modeBtn} ${modeStatus === 0 ? styles.active : ''} ${pendingMode === 0 ? styles.pulsing : ''}`}
+                  onClick={() => handleModeChange(0)}
                 >LOCAL</button>
                 <button 
-                  className={`${styles.modeBtn} ${modeStatus === 2 ? styles.active : ''} ${pendingMode === 2 ? styles.pulsing : ''}`}
-                  onClick={() => handleModeChange(2)}
+                  className={`${styles.modeBtn} ${modeStatus === 1 ? styles.active : ''} ${pendingMode === 1 ? styles.pulsing : ''}`}
+                  onClick={() => handleModeChange(1)}
                 >REMOTO</button>
                 {!isMaintenance && (
                   <button className={`${styles.modeBtn} ${requesting ? styles.pulsing : ''}`} onClick={handleRequest}>
