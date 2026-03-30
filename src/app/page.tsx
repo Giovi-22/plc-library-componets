@@ -72,6 +72,21 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
           <button 
+            onClick={() => window.location.href = '/config'}
+            style={{ 
+              background: 'rgba(255,255,255,0.05)', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              padding: '0.6rem 1.2rem',
+              borderRadius: '0.75rem',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              color: 'rgba(255,255,255,0.5)',
+              cursor: 'pointer'
+            }}
+          >
+            ⚙️ RED
+          </button>
+          <button 
             onClick={() => window.location.href = '/login'}
             style={{ 
               background: 'rgba(255,255,255,0.05)', 
@@ -84,7 +99,7 @@ export default function Home() {
               cursor: 'pointer'
             }}
           >
-            🔑 CAMBIAR ROL
+            🔑 ROL
           </button>
           <StatusBadge status={isConnected ? 'online' : 'offline'} />
         </div>

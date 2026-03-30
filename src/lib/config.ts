@@ -1,6 +1,9 @@
-// Si estás en el cliente, usa la IP actual. De lo contrario, usa localhost como fallback.
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
+    const customIp = localStorage.getItem('SCADA_SERVER_IP');
+    if (customIp) {
+      return `http://${customIp}:3001`; // Mantiene el puerto 3001 por diseño
+    }
     return `${window.location.protocol}//${window.location.hostname}:3001`;
   }
   return 'http://localhost:3001';
