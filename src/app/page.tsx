@@ -83,10 +83,10 @@ export default function Home() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <button 
+          <button
             onClick={() => window.location.href = '/config'}
-            style={{ 
-              background: 'rgba(255,255,255,0.05)', 
+            style={{
+              background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.1)',
               padding: '0.6rem 1.2rem',
               borderRadius: '0.75rem',
@@ -98,10 +98,10 @@ export default function Home() {
           >
             ⚙️ RED
           </button>
-          <button 
+          <button
             onClick={() => window.location.href = '/login'}
-            style={{ 
-              background: 'rgba(255,255,255,0.05)', 
+            style={{
+              background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.1)',
               padding: '0.6rem 1.2rem',
               borderRadius: '0.75rem',
@@ -134,14 +134,14 @@ export default function Home() {
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
         {devices.map((device) => {
-          const status = device.state?.STAT_FAULT || device.state?.FAIL_TERMICO ? 'fault' : 
-                         device.state?.STAT_RUNNING ? 'running' : 'stopped';
-          
+          const status = device.state?.STAT_FAULT || device.state?.FAIL_TERMICO ? 'fault' :
+            device.state?.STAT_RUNNING ? 'running' : 'stopped';
+
           return (
             <div key={device.id} onClick={() => setSelectedMotor(device)}>
-              <Motor 
-                id={device.id} 
-                name={device.name} 
+              <Motor
+                id={device.id}
+                name={device.name}
                 status={status}
               />
             </div>
@@ -150,7 +150,7 @@ export default function Home() {
       </section>
 
       {selectedMotor && (
-        <MotorFaceplate 
+        <MotorFaceplate
           id={selectedMotor.id}
           name={selectedMotor.name}
           state={devices.find(d => d.id === selectedMotor.id)?.state || {}}
