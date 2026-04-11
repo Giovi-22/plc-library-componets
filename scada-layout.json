@@ -1,0 +1,51 @@
+{
+  "elements": [
+    {
+      "id": "MOTOR-823",
+      "type": "motor",
+      "x": 660,
+      "y": 180,
+      "rotation": 0,
+      "width": 60,
+      "height": 40,
+      "props": {
+        "name": "TQ_106",
+        "tag": "TQ_106"
+      }
+    },
+    {
+      "id": "PIPE-688",
+      "type": "pipe",
+      "x": 28,
+      "y": 5,
+      "rotation": 0,
+      "width": 100,
+      "height": 4,
+      "props": {
+        "name": "Nuevo pipe",
+        "thickness": 10,
+        "color": "#7f8c8d",
+        "tag": "TQ_106"
+      },
+      "points": [
+        380,
+        200,
+        640,
+        200
+      ]
+    },
+    {
+      "id": "MOTOR-122",
+      "type": "motor",
+      "x": 340,
+      "y": 180,
+      "rotation": 0,
+      "width": 60,
+      "height": 40,
+      "props": {
+        "name": "Redler R1",
+        "tag": "R1"
+      }
+    }
+  ]
+}

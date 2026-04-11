@@ -44,44 +44,9 @@
   text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 0.75rem; display: block;
 }
 
-/* BOTONES */
-.btnGrid { display: grid; gap: 0.5rem; }
+/* 🏗️ LAYOUT PARA BOTONES */
+.btnGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 .btnRow { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-
-.modeBtn, .cmdBtn {
-  background: #1c212b; border: 1px solid rgba(255,255,255,0.1);
-  color: #a0a6b5; padding: 0.75rem; border-radius: 0.65rem;
-  font-weight: 700; font-size: 0.7rem; transition: all 0.2s ease; cursor: pointer;
-}
-
-.modeBtn:hover, .cmdBtn:hover { transform: translateY(-2px); background: #252a35; }
-
-/* EFECTOS NEÓN */
-.active { 
-  background: var(--accent) !important; color: #000 !important; 
-  border: 2px solid #00f3ff !important;
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset 0 0 10px rgba(135, 255, 255, 0.9) !important;
-  font-weight: 900;
-}
-
-.pulsing { animation: pulseNeon 1s ease-in-out infinite !important; z-index: 100; }
-
-@keyframes pulseNeon {
-  0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
-  50% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.8); border-color: #00f3ff; transform: scale(1.02); }
-  100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
-}
-
-.start { border-color: rgba(0, 255, 127, 0.3) !important; color: #00ff7f !important; }
-.stop { border-color: rgba(255, 64, 129, 0.3) !important; color: #ff4081 !important; }
-.reset { grid-column: span 2; background: #252a35; }
-
-/* 🔴 LEDS */
-.ledRow { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-.led { width: 8px; height: 8px; border-radius: 50%; background: #2a2d3e; }
-.ledOnSuccess { background: var(--success); box-shadow: 0 0 10px var(--success); }
-.ledOnDanger { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
-.ledLabel { font-size: 0.75rem; color: #fff; opacity: 0.8; }
 
 .closeBtn { background: none; border: none; font-size: 1.5rem; color: #4e566d; cursor: pointer; }
 .closeBtn:hover { color: #fff; transform: rotate(90deg); transition: 0.3s; }

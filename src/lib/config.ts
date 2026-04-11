@@ -12,3 +12,10 @@ const getBaseUrl = () => {
 
 export const API_URL = getBaseUrl();
 export const SOCKET_URL = getBaseUrl();
+
+// GRID CONFIGURATION
+export const GRID_SIZE = 20;
+
+export const snapToGrid = (value: number) => {
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+};

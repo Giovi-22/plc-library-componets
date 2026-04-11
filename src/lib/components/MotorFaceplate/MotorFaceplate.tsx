@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import styles from './MotorFaceplate.module.css';
+import { API_URL } from '@/lib/config';
+import { PLCButton } from '../UI/PLCButton/PLCButton';
+import { StatusLed } from '../UI/StatusLed/StatusLed';
 
 interface MotorFaceplateProps {
   id: string;
@@ -29,12 +32,12 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
 
   const handleRequest = async () => {
     setRequesting(true);
-    await fetch(`http://localhost:3001/devices/${id}/maintenance/request`, { method: 'POST' });
+    await fetch(`${API_URL}/devices/${id}/maintenance/request`, { method: 'POST' });
     setTimeout(() => setRequesting(false), 2000);
   };
 
   const handleApprove = async (role: 'PROD' | 'SUPER') => {
-    await fetch(`http://localhost:3001/devices/${id}/maintenance/approve`, {
+    await fetch(`${API_URL}/devices/${id}/maintenance/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role })
@@ -42,7 +45,7 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
   };
 
   const handleCancel = async () => {
-    await fetch(`http://localhost:3001/devices/${id}/maintenance/cancel`, { method: 'POST' });
+    await fetch(`${API_URL}/devices/${id}/maintenance/cancel`, { method: 'POST' });
   };
 
   // 📡 LÓGICA DE LA PANTALLA DE NOTIFICACIONES
@@ -88,7 +91,10 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
           <div className={styles.titleGroup}>
             <h2>{name || id}</h2>
             <div className={styles.modeBadge}>
-              {modeStatus === 0 ? 'Modo: LOCAL' : modeStatus === 1 ? 'Modo: REMOTO' : 'Modo: MANTO'}
+              {modeStatus === 0 ? 'Modo: LOCAL' : 
+               modeStatus === 1 ? 'Modo: REMOTO' : 
+               modeStatus === 2 ? 'Modo: MANTO' : 
+               'Modo: AUTOMÁTICO'}
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose}>&times;</button>
@@ -102,29 +108,55 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
             <div className={styles.sectionBox}>
               <span className={styles.sectionTitle}>SELECCIÓN DE MODO</span>
               <div className={styles.btnGrid}>
-                 <button 
-                  className={`${styles.modeBtn} ${modeStatus === 0 ? styles.active : ''} ${pendingMode === 0 ? styles.pulsing : ''}`}
+                <PLCButton 
+                  label="LOCAL"
+                  active={modeStatus === 0}
+                  pulsing={pendingMode === 0}
                   onClick={() => handleModeChange(0)}
-                >LOCAL</button>
-                <button 
-                  className={`${styles.modeBtn} ${modeStatus === 1 ? styles.active : ''} ${pendingMode === 1 ? styles.pulsing : ''}`}
+                />
+                <PLCButton 
+                  label="REMOTO"
+                  active={modeStatus === 1}
+                  pulsing={pendingMode === 1}
                   onClick={() => handleModeChange(1)}
-                >REMOTO</button>
-                {!isMaintenance && (
-                  <button className={`${styles.modeBtn} ${requesting ? styles.pulsing : ''}`} onClick={handleRequest}>
-                    {requesting ? 'SOLICITANDO...' : 'SOLICITAR MANTO'}
-                  </button>
-                )}
-                {isMaintenance && <button className={`${styles.modeBtn} ${styles.active}`}>EN MANTO</button>}
+                />
+                <PLCButton 
+                  label="AUTOMÁTICO"
+                  active={modeStatus === 3}
+                  pulsing={pendingMode === 3}
+                  onClick={() => handleModeChange(3)}
+                />
+                {/* Botones de mantenimiento ocultos por ahora según solicitud usuario */}
+                {/* !isMaintenance && (
+                  <PLCButton 
+                    label={requesting ? 'SOLICITANDO...' : 'SOLICITAR MANTO'}
+                    pulsing={requesting}
+                    onClick={handleRequest}
+                  />
+                ) */}
+                {isMaintenance && <PLCButton label="EN MANTO" active />}
               </div>
             </div>
 
             <div className={styles.sectionBox}>
               <span className={styles.sectionTitle}>COMANDOS MANUALES</span>
               <div className={styles.btnRow}>
-                <button className={`${styles.cmdBtn} ${styles.start}`} onMouseDown={() => onSendCommand('CMD_FINAL_START', true)} onMouseUp={() => onSendCommand('CMD_FINAL_START', false)}>START</button>
-                <button className={`${styles.cmdBtn} ${styles.stop}`} onMouseDown={() => onSendCommand('CMD_FINAL_STOP', true)} onMouseUp={() => onSendCommand('CMD_FINAL_STOP', false)}>STOP</button>
-                <button className={`${styles.cmdBtn} ${styles.reset}`} onClick={() => onSendCommand('CMD_FINAL_RESET', true)}>RESET FALLAS</button>
+                <PLCButton 
+                  label="START" 
+                  variant="success" 
+                  onPress={(active) => onSendCommand('CMD_FINAL_START', active)} 
+                />
+                <PLCButton 
+                  label="STOP" 
+                  variant="danger" 
+                  onPress={(active) => onSendCommand('CMD_FINAL_STOP', active)} 
+                />
+                <PLCButton 
+                  label="RESET FALLAS" 
+                  variant="warning" 
+                  onClick={() => onSendCommand('CMD_FINAL_RESET', true)} 
+                  fullWidth
+                />
               </div>
             </div>
           </div>
@@ -133,22 +165,10 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
           <div className={styles.diagColumn}>
             <div className={styles.sectionBox}>
               <span className={styles.sectionTitle}>ESTADOS DEL SISTEMA</span>
-              <div className={styles.ledRow}>
-                <div className={`${styles.led} ${state.STAT_RUNNING ? styles.ledOnSuccess : ''}`} />
-                <span className={styles.ledLabel}>Confirmación de Marcha</span>
-              </div>
-              <div className={styles.ledRow}>
-                <div className={`${styles.led} ${state.PERM_TERMICO_OK ? styles.ledOnSuccess : ''}`} />
-                <span className={styles.ledLabel}>Permiso Térmico OK</span>
-              </div>
-              <div className={styles.ledRow}>
-                <div className={`${styles.led} ${state.STAT_FAULT ? styles.ledOnDanger : ''}`} />
-                <span className={styles.ledLabel}>Falla General</span>
-              </div>
-              <div className={styles.ledRow}>
-                <div className={`${styles.led} ${state.FAIL_TERMICO ? styles.ledOnDanger : ''}`} />
-                <span className={styles.ledLabel}>Disparo Térmico</span>
-              </div>
+                <StatusLed label="Confirmación de Marcha" isOn={state.STAT_RUNNING} color="green" />
+                <StatusLed label="Permiso Térmico OK" isOn={state.PERM_TERMICO_OK} color="green" />
+                <StatusLed label="Falla General" isOn={state.STAT_FAULT} color="red" />
+                <StatusLed label="Disparo Térmico" isOn={state.FAIL_TERMICO} color="red" />
             </div>
 
             <div className={styles.sectionBox}>
@@ -161,24 +181,13 @@ export const MotorFaceplate: React.FC<MotorFaceplateProps> = ({ id, name, state 
           </div>
         </div>
 
-        {/* OVERLAY DE MANTENIMIENTO */}
-        {workflow && (
+        {/* OVERLAY DE MANTENIMIENTO oculto por ahora */}
+        {/* workflow && (
           <div className={styles.maintOverlay}>
              <h3>AUTORIZACIÓN REQUERIDA</h3>
-             <p>Por favor, coordine con Producción y Supervisión para otorgar el acceso local al técnico.</p>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%' }}>
-                <button 
-                  className={`${styles.modeBtn} ${workflow.prodApproved ? styles.active : ''}`}
-                  onClick={() => handleApprove('PROD')}
-                >PRODUCCIÓN</button>
-                <button 
-                   className={`${styles.modeBtn} ${workflow.superApproved ? styles.active : ''}`}
-                   onClick={() => handleApprove('SUPER')}
-                >SUPERVISOR</button>
-             </div>
-             <span className={styles.cancelLink} onClick={handleCancel}>CANCELAR SOLICITUD</span>
+             ...
           </div>
-        )}
+        ) */}
       </div>
     </div>
   );

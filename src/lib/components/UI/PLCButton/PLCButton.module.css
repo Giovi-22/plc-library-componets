@@ -1,0 +1,73 @@
+.plcBtn {
+  background: #1c212b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a0a6b5;
+  padding: 0.75rem;
+  border-radius: 0.65rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  outline: none;
+}
+
+.plcBtn:hover {
+  transform: translateY(-2px);
+  background: #252a35;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.plcBtn:active {
+  transform: translateY(0);
+}
+
+/* VARIANTS */
+.primary {
+  border-color: rgba(0, 243, 255, 0.3);
+  color: var(--accent);
+}
+
+.success {
+  border-color: rgba(0, 255, 127, 0.3);
+  color: var(--success);
+}
+
+.danger {
+  border-color: rgba(255, 64, 129, 0.3);
+  color: var(--danger);
+}
+
+.warning {
+  border-color: rgba(255, 204, 0, 0.3);
+  color: #ffcc00;
+}
+
+/* STATES */
+.activeMode {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border: 2px solid #00f3ff !important;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset 0 0 10px rgba(135, 255, 255, 0.9) !important;
+  font-weight: 900;
+}
+
+.pulsing {
+  animation: pulseNeon 1s ease-in-out infinite !important;
+  z-index: 10;
+}
+
+@keyframes pulseNeon {
+  0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
+  50% { box-shadow: 0 0 15px rgba(0, 243, 255, 0.8); border-color: #00f3ff; transform: scale(1.02); }
+  100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.4); border-color: rgba(0, 243, 255, 0.4); transform: scale(1.0); }
+}
+
+.fullWidth {
+  width: 100%;
+}
