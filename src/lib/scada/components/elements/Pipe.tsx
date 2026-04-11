@@ -15,9 +15,10 @@ interface PipeProps {
 
 export const Pipe: React.FC<PipeProps> = ({ element, mode, isFlowing = false }) => {
   const updateElement = useLayoutStore((state) => state.updateElement);
-  const selectElement = useLayoutStore((state) => state.selectElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
-  const isSelected = selectedId === element.id;
+  const setSelection = useLayoutStore((state) => state.setSelection);
+  const toggleSelection = useLayoutStore((state) => state.toggleSelection);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
+  const isSelected = selectedIds.includes(element.id);
 
   const { points = [], props } = element;
 
@@ -66,7 +67,11 @@ export const Pipe: React.FC<PipeProps> = ({ element, mode, isFlowing = false }) 
       onClick={(e) => {
         if (mode === 'designer') {
           e.cancelBubble = true;
-          selectElement(element.id);
+          if (e.evt.shiftKey) {
+            toggleSelection(element.id);
+          } else {
+            setSelection([element.id]);
+          }
         }
       }}
       onDblClick={handleDblClick}

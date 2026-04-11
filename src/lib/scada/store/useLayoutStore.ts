@@ -3,7 +3,7 @@ import { ScadaElement, ScadaLayout } from '../types';
 
 interface LayoutState {
   elements: ScadaElement[];
-  selectedId: string | null;
+  selectedIds: string[];
   isLoading: boolean;
   isSaving: boolean;
   activeFaceplateId: string | null;
@@ -13,7 +13,11 @@ interface LayoutState {
   addElement: (element: ScadaElement) => void;
   updateElement: (id: string, updates: Partial<ScadaElement>) => void;
   removeElement: (id: string) => void;
-  selectElement: (id: string | null) => void;
+  setSelection: (ids: string[]) => void;
+  toggleSelection: (id: string) => void;
+  clearSelection: () => void;
+  groupElements: () => void;
+  ungroupElements: () => void;
   
   // Layout Management (Async)
   fetchLayout: () => Promise<void>;
@@ -26,7 +30,7 @@ interface LayoutState {
 
 export const useLayoutStore = create<LayoutState>((set) => ({
   elements: [],
-  selectedId: null,
+  selectedIds: [],
   activeFaceplateId: null,
   isLoading: false,
   isSaving: false,
@@ -45,10 +49,57 @@ export const useLayoutStore = create<LayoutState>((set) => ({
 
   removeElement: (id) => set((state) => ({
     elements: state.elements.filter((el) => el.id !== id),
-    selectedId: state.selectedId === id ? null : state.selectedId
+    selectedIds: state.selectedIds.filter((sid) => sid !== id)
   })),
 
-  selectElement: (id) => set({ selectedId: id }),
+  setSelection: (ids) => set((state) => {
+    // Si seleccionamos 1 elemento y pertenece a un grupo, seleccionamos a todo el grupo.
+    if (ids.length === 1) {
+      const el = state.elements.find(e => e.id === ids[0]);
+      if (el && el.groupId) {
+        const groupIds = state.elements.filter(e => e.groupId === el.groupId).map(e => e.id);
+        return { selectedIds: groupIds };
+      }
+    }
+    return { selectedIds: ids };
+  }),
+
+  toggleSelection: (id) => set((state) => {
+    const isSelected = state.selectedIds.includes(id);
+    const el = state.elements.find(e => e.id === id);
+    let idsToToggle = [id];
+
+    if (el && el.groupId) {
+      idsToToggle = state.elements.filter(e => e.groupId === el.groupId).map(e => e.id);
+    }
+
+    if (isSelected) {
+      return { selectedIds: state.selectedIds.filter(sid => !idsToToggle.includes(sid)) };
+    } else {
+      return { selectedIds: [...state.selectedIds, ...idsToToggle] };
+    }
+  }),
+
+  clearSelection: () => set({ selectedIds: [] }),
+
+  groupElements: () => set((state) => {
+    if (state.selectedIds.length < 2) return state;
+    const groupId = `GROUP-${Math.random().toString(36).substr(2, 9)}`;
+    return {
+      elements: state.elements.map(el => 
+        state.selectedIds.includes(el.id) ? { ...el, groupId } : el
+      )
+    };
+  }),
+
+  ungroupElements: () => set((state) => {
+    if (state.selectedIds.length === 0) return state;
+    return {
+      elements: state.elements.map(el => 
+        state.selectedIds.includes(el.id) ? { ...el, groupId: undefined } : el
+      )
+    };
+  }),
 
   openFaceplate: (id) => set({ activeFaceplateId: id }),
   closeFaceplate: () => set({ activeFaceplateId: null }),

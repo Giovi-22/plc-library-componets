@@ -14,9 +14,10 @@ interface ElevatorElementProps {
 
 export const ElevatorElement: React.FC<ElevatorElementProps> = ({ element, mode, plcValue }) => {
   const updateElement = useLayoutStore((state) => state.updateElement);
-  const selectElement = useLayoutStore((state) => state.selectElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
-  const isSelected = selectedId === element.id;
+  const setSelection = useLayoutStore((state) => state.setSelection);
+  const toggleSelection = useLayoutStore((state) => state.toggleSelection);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
+  const isSelected = selectedIds.includes(element.id);
   const isRunning = !!plcValue;
 
   const width = element.width || 60;
@@ -64,7 +65,11 @@ export const ElevatorElement: React.FC<ElevatorElementProps> = ({ element, mode,
       onClick={(e) => {
         if (mode === 'designer') {
           e.cancelBubble = true;
-          selectElement(element.id);
+          if (e.evt.shiftKey) {
+            toggleSelection(element.id);
+          } else {
+            setSelection([element.id]);
+          }
         }
       }}
     >

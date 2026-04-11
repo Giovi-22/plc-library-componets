@@ -11,7 +11,7 @@ interface PipeLayerProps {
 }
 export const PipeLayer: React.FC<PipeLayerProps> = ({ mode }) => {
   const elements = useLayoutStore((state) => state.elements);
-  const selectedId = useLayoutStore((state) => state.selectedId);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
   const { data: plcData } = usePLCData();
 
   // Filtramos solo los elementos tipo cañería
@@ -33,7 +33,7 @@ export const PipeLayer: React.FC<PipeLayerProps> = ({ mode }) => {
               isFlowing={!!isFlowing}
             />
             {/* Si estamos en diseño y seleccionada, mostrar los nodos de control */}
-            {mode === 'designer' && selectedId === pipe.id && (
+            {mode === 'designer' && selectedIds.includes(pipe.id) && (
               <PipeNodes element={pipe} />
             )}
           </React.Fragment>

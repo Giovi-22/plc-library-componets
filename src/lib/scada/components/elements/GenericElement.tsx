@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Group, Rect, Path, Text, Line } from 'react-konva';
+import { Group, Rect, Path, Text, Line, Ellipse } from 'react-konva';
 import { ScadaElement } from '../../types';
 import { useLayoutStore } from '../../store/useLayoutStore';
+import { useFlowAnimation } from '../../hooks/useFlowAnimation';
+import { snapToGrid } from '../../../config';
 
 interface GenericElementProps {
   element: ScadaElement;
@@ -13,17 +15,20 @@ interface GenericElementProps {
 
 export const GenericElement: React.FC<GenericElementProps> = ({ element, mode, plcValue }) => {
   const updateElement = useLayoutStore((state) => state.updateElement);
-  const selectElement = useLayoutStore((state) => state.selectElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
+  const setSelection = useLayoutStore((state) => state.setSelection);
+  const toggleSelection = useLayoutStore((state) => state.toggleSelection);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
 
-  const isSelected = selectedId === element.id;
+  const isSelected = selectedIds.includes(element.id);
 
   const handleDragEnd = (e: any) => {
     updateElement(element.id, {
-      x: e.target.x(),
-      y: e.target.y(),
+      x: snapToGrid(e.target.x()),
+      y: snapToGrid(e.target.y()),
     });
   };
+
+  const animPhase = useFlowAnimation(plcValue || false, 5);
 
   // Renderizado según el tipo
   const renderShape = () => {
@@ -162,7 +167,7 @@ export const GenericElement: React.FC<GenericElementProps> = ({ element, mode, p
             {Array.from({ length: rollerCount + 1 }).map((_, i) => (
               <Rect
                 key={i}
-                x={i * (cw / rollerCount) - 3}
+                x={i * (cw / rollerCount) - 3 + (plcValue ? animPhase : 0) % (cw / rollerCount)}
                 y={ch * 0.2}
                 width={6}
                 height={ch * 0.6}
@@ -190,14 +195,18 @@ export const GenericElement: React.FC<GenericElementProps> = ({ element, mode, p
             {/* Canal interior */}
             <Rect x={4} y={4} width={rw - 8} height={rh - 8} fill="#161e26" cornerRadius={2} />
             {/* Cadena transportadora (eslabones) */}
-            {Array.from({ length: chainCount }).map((_, i) => (
-              <Group key={i} x={i * chainSpacing + 8}>
-                {/* Eslabón horizontal */}
-                <Rect y={rh / 2 - 3} width={16} height={6} fill={plcValue ? '#2ecc71' : '#3a4555'} cornerRadius={2} />
-                {/* Rasqueta */}
-                <Rect x={6} y={rh * 0.15} width={4} height={rh * 0.7} fill={plcValue ? '#27ae60' : '#2c3a45'} cornerRadius={1} />
-              </Group>
-            ))}
+            {Array.from({ length: chainCount + 2 }).map((_, i) => {
+              const chainX = (i * chainSpacing - chainSpacing + (plcValue ? animPhase * 2 : 0)) % (rw + chainSpacing);
+              if (chainX < -10 || chainX > rw + 10) return null; // Clipping visual simple
+              return (
+                <Group key={i} x={chainX}>
+                  {/* Eslabón horizontal */}
+                  <Rect y={rh / 2 - 3} width={16} height={6} fill={plcValue ? '#2ecc71' : '#3a4555'} cornerRadius={2} />
+                  {/* Rasqueta */}
+                  <Rect x={6} y={rh * 0.15} width={4} height={rh * 0.7} fill={plcValue ? '#27ae60' : '#2c3a45'} cornerRadius={1} />
+                </Group>
+              );
+            })}
             {/* Tapas laterales */}
             <Rect x={0} y={0} width={8} height={rh} fill="#2c3a45" stroke="#4a5568" strokeWidth={1} cornerRadius={[4, 0, 0, 4]} />
             <Rect x={rw - 8} y={0} width={8} height={rh} fill="#2c3a45" stroke="#4a5568" strokeWidth={1} cornerRadius={[0, 4, 4, 0]} />
@@ -205,6 +214,55 @@ export const GenericElement: React.FC<GenericElementProps> = ({ element, mode, p
           </Group>
         );
       }
+
+      case 'rect':
+        return (
+          <Rect
+            width={element.width || 50}
+            height={element.height || 50}
+            fill={element.props.fill || 'transparent'}
+            stroke={element.props.stroke || '#888'}
+            strokeWidth={element.props.thickness || 2}
+            shadowBlur={isSelected ? 5 : 0}
+            shadowColor="#00e5ff"
+            cornerRadius={4}
+          />
+        );
+
+      case 'circle': {
+        const w = Math.max(10, element.width || 50);
+        const h = Math.max(10, element.height || 50);
+        return (
+          <Ellipse
+            x={w / 2}
+            y={h / 2}
+            radiusX={w / 2}
+            radiusY={h / 2}
+            fill={element.props.fill || 'transparent'}
+            stroke={element.props.stroke || '#888'}
+            strokeWidth={element.props.thickness || 2}
+            shadowBlur={isSelected ? 5 : 0}
+            shadowColor="#00e5ff"
+          />
+        );
+      }
+
+      case 'text':
+        return (
+          <Text
+            text={element.props.name || 'Texto Libre'}
+            width={element.width || 100}
+            height={element.height || 30}
+            align="left"
+            verticalAlign="middle"
+            fill={element.props.fill || '#ffffff'}
+            fontSize={element.props.fontSize || 14}
+            fontStyle="bold"
+            shadowBlur={isSelected ? 5 : 0}
+            shadowColor="#00e5ff"
+            wrap="word"
+          />
+        );
 
       default:
         return <Rect width={20} height={20} fill="red" />;
@@ -224,19 +282,40 @@ export const GenericElement: React.FC<GenericElementProps> = ({ element, mode, p
       onClick={(e) => {
         if (mode === 'designer') {
           e.cancelBubble = true;
-          selectElement(element.id);
+          if (e.evt.shiftKey) {
+            toggleSelection(element.id);
+          } else {
+            setSelection([element.id]);
+          }
         }
       }}
     >
       {renderShape()}
-      <Text
-        text={element.props.name || element.id}
-        y={element.type === 'pipe' ? 10 : 35}
-        width={element.type === 'valve' ? 40 : 30}
-        align="center"
-        fill="rgba(255,255,255,0.5)"
-        fontSize={8}
-      />
+      
+      {/* Etiqueta central por defecto, con soporte de offsets y scale - Omitir para textos libres */}
+      {element.type !== 'text' && element.type !== 'pipe' && (
+        <Text
+          text={element.props.name || element.id}
+          x={element.props.labelOffsetX || 0}
+          y={(element.props.labelOffsetY !== undefined) ? element.props.labelOffsetY : (element.type === 'valve' ? 35 : (element.height || 40) + 5)}
+          width={element.width || 40}
+          align="center"
+          fill="rgba(255,255,255,0.7)"
+          fontSize={element.props.labelFontSize || 8}
+          fontStyle="bold"
+          draggable={mode === 'designer'}
+          onDragEnd={(e) => {
+            e.cancelBubble = true;
+            updateElement(element.id, {
+              props: {
+                ...element.props,
+                labelOffsetX: snapToGrid(e.target.x()),
+                labelOffsetY: snapToGrid(e.target.y())
+              }
+            });
+          }}
+        />
+      )}
     </Group>
   );
 };

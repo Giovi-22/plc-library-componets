@@ -20,23 +20,94 @@ export const ScadaStage: React.FC<ScadaStageProps> = ({ mode }) => {
   const { stage, handleWheel } = useStage();
   const { data: plcData } = usePLCData();
   const elements = useLayoutStore((state) => state.elements);
-  const selectElement = useLayoutStore((state) => state.selectElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
+  const setSelection = useLayoutStore((state) => state.setSelection);
+  const clearSelection = useLayoutStore((state) => state.clearSelection);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
   const updateElement = useLayoutStore((state) => state.updateElement);
 
   const stageRef = useRef<Konva.Stage>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
 
-  // Whenever selectedId changes, attach the Transformer to the correct Konva node
+  const [selectionRect, setSelectionRect] = React.useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const selectionStartPos = useRef<{x: number, y: number} | null>(null);
+
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (mode !== 'designer') return;
+    if (e.target !== e.target.getStage()) {
+      return;
+    }
+    if (!e.evt.shiftKey) {
+      clearSelection();
+    }
+    const pos = e.target.getStage()?.getRelativePointerPosition();
+    if (pos) {
+      selectionStartPos.current = pos;
+      setSelectionRect({ x: pos.x, y: pos.y, width: 0, height: 0 });
+    }
+  };
+
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (mode !== 'designer' || !selectionStartPos.current) return;
+    const pos = e.target.getStage()?.getRelativePointerPosition();
+    if (pos) {
+      setSelectionRect({
+        x: Math.min(selectionStartPos.current.x, pos.x),
+        y: Math.min(selectionStartPos.current.y, pos.y),
+        width: Math.abs(pos.x - selectionStartPos.current.x),
+        height: Math.abs(pos.y - selectionStartPos.current.y),
+      });
+    }
+  };
+
+  const handleMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (mode !== 'designer' || !selectionStartPos.current || !selectionRect) {
+      selectionStartPos.current = null;
+      setSelectionRect(null);
+      return;
+    }
+
+    const box = selectionRect;
+    if (box.width > 2 && box.height > 2) {
+      const intersectedIds = elements.filter(el => {
+        const ex = el.x;
+        const ey = el.y;
+        const ew = el.width || 40;
+        const eh = el.height || 40;
+        return (
+          ex < box.x + box.width &&
+          ex + ew > box.x &&
+          ey < box.y + box.height &&
+          ey + eh > box.y
+        );
+      }).map(el => el.id);
+
+      if (intersectedIds.length > 0) {
+        if (e.evt.shiftKey) {
+          setSelection([...new Set([...selectedIds, ...intersectedIds])]);
+        } else {
+          setSelection(intersectedIds);
+        }
+      }
+    }
+
+    selectionStartPos.current = null;
+    setSelectionRect(null);
+  };
+
+  // Attach Transformer to selected nodes
   useEffect(() => {
     if (!transformerRef.current || !stageRef.current) return;
 
-    if (selectedId && mode === 'designer') {
-      const node = stageRef.current.findOne(`#${selectedId}`);
-      // Pipes have their own node-editing system — skip the Transformer for them
-      const selectedEl = elements.find((el) => el.id === selectedId);
-      if (node && selectedEl?.type !== 'pipe') {
-        transformerRef.current.nodes([node]);
+    if (selectedIds.length > 0 && mode === 'designer') {
+      const nodes = selectedIds
+        .map(id => stageRef.current?.findOne(`#${id}`))
+        .filter((node): node is Konva.Node => node !== undefined && node !== null);
+        
+      const selectedEls = elements.filter(el => selectedIds.includes(el.id));
+      const hasPipe = selectedEls.some(el => el.type === 'pipe');
+      
+      if (nodes.length > 0 && !hasPipe) {
+        transformerRef.current.nodes(nodes);
       } else {
         transformerRef.current.nodes([]);
       }
@@ -45,7 +116,7 @@ export const ScadaStage: React.FC<ScadaStageProps> = ({ mode }) => {
     }
 
     transformerRef.current.getLayer()?.batchDraw();
-  }, [selectedId, mode, elements]);
+  }, [selectedIds, mode, elements]);
 
   return (
     <div style={{ background: '#0a0a0a', width: '100%', height: '100%' }}>
@@ -58,13 +129,10 @@ export const ScadaStage: React.FC<ScadaStageProps> = ({ mode }) => {
         x={stage.x}
         y={stage.y}
         onWheel={handleWheel}
-        draggable={mode === 'designer'}
-        onClick={(e) => {
-          // Deselect only when clicking the stage background, not on any element
-          if (e.target === e.target.getStage()) {
-            selectElement(null);
-          }
-        }}
+        draggable={mode === 'designer' && !selectionStartPos.current}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
         {/* GRID LAYER */}
         <Layer id="grid-layer">
@@ -130,25 +198,34 @@ export const ScadaStage: React.FC<ScadaStageProps> = ({ mode }) => {
               return newBox;
             }}
             onTransformEnd={(e) => {
-              const node = e.target;
-              const scaleX = node.scaleX();
-              const scaleY = node.scaleY();
-
-              // Reset scale and bake into width/height to avoid cumulative scale drift
-              node.scaleX(1);
-              node.scaleY(1);
-
-              if (selectedId) {
-                updateElement(selectedId, {
+              const nodes = transformerRef.current?.nodes() || [];
+              nodes.forEach(node => {
+                const scaleX = node.scaleX();
+                const scaleY = node.scaleY();
+                node.scaleX(1);
+                node.scaleY(1);
+                updateElement(node.id(), {
                   x: snapToGrid(node.x()),
                   y: snapToGrid(node.y()),
                   width: Math.max(10, snapToGrid(node.width() * scaleX)),
                   height: Math.max(10, snapToGrid(node.height() * scaleY)),
                   rotation: node.rotation(),
                 });
-              }
+              });
             }}
           />
+          {/* RECTÁNGULO DE SELECCIÓN */}
+          {selectionRect && (
+            <Rect
+              x={selectionRect.x}
+              y={selectionRect.y}
+              width={selectionRect.width}
+              height={selectionRect.height}
+              fill="rgba(0, 161, 255, 0.3)"
+              stroke="rgba(0, 161, 255, 0.8)"
+              strokeWidth={1}
+            />
+          )}
         </Layer>
       </Stage>
     </div>

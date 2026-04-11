@@ -5,7 +5,7 @@ import { CanvasContainer } from '@/lib/scada/components/CanvasContainer';
 import { useLayoutStore } from '@/lib/scada/store/useLayoutStore';
 import { ElementType, ScadaElement } from '@/lib/scada/types';
 import { API_URL, snapToGrid } from '@/lib/config';
-import { Settings, Save, Play, Square, Circle, MoveRight, Database, RotateCw } from 'lucide-react';
+import { Settings, Save, Play, Square, Circle, MoveRight, Database, RotateCw, Type } from 'lucide-react';
 
 export default function ScadaDesignerPage() {
   const elements = useLayoutStore((state) => state.elements);
@@ -13,7 +13,10 @@ export default function ScadaDesignerPage() {
   const saveLayout = useLayoutStore((state) => state.saveLayout);
   const isSaving = useLayoutStore((state) => state.isSaving);
   const addElement = useLayoutStore((state) => state.addElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
+  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
+  const groupElements = useLayoutStore((state) => state.groupElements);
+  const ungroupElements = useLayoutStore((state) => state.ungroupElements);
   const updateElement = useLayoutStore((state) => state.updateElement);
 
   const [availableDevices, setAvailableDevices] = React.useState<any[]>([]);
@@ -57,7 +60,10 @@ export default function ScadaDesignerPage() {
       redler: { w: 200, h: 40 },
       silo: { w: 100, h: 150 },
       tank: { w: 120, h: 120 },
-      pipe: { w: 100, h: 10 }
+      pipe: { w: 100, h: 10 },
+      text: { w: 100, h: 30 },
+      rect: { w: 50, h: 50 },
+      circle: { w: 50, h: 50 }
     };
 
     const size = defaults[type] || { w: 50, h: 50 };
@@ -186,9 +192,44 @@ export default function ScadaDesignerPage() {
           <ToolCategory title="INFRAESTRUCTURA">
             <ToolItem icon={<MoveRight size={18} />} label="Cañería" onClick={() => handleAddElement('pipe')} />
           </ToolCategory>
+
+          <ToolCategory title="DIBUJO">
+            <ToolItem icon={<Type size={18} />} label="Texto" onClick={() => handleAddElement('text')} />
+            <ToolItem icon={<Square size={18} />} label="Rectángulo" onClick={() => handleAddElement('rect')} />
+            <ToolItem icon={<Circle size={18} />} label="Círculo" onClick={() => handleAddElement('circle')} />
+          </ToolCategory>
         </div>
 
-        {/* PROPERTY EDITOR (Placeholder) */}
+        {/* MULTIPLE ELEMENTS SELECTED PANEL */}
+        {selectedIds.length > 1 && (
+          <div style={{
+            position: 'absolute', top: '20px', right: '20px', width: '280px',
+            background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(15px)', borderRadius: '12px', padding: '20px',
+            color: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 10
+          }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1.5rem', color: 'var(--accent)' }}>
+              MULTI-SELECCIÓN
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: '#ccc', marginBottom: '1rem' }}>
+              {selectedIds.length} elementos seleccionados.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                onClick={() => groupElements()} 
+                style={{ width: '100%', padding: '10px', background: 'var(--accent)', border: 'none', color: 'black', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                AGRUPAR ELEMENTOS
+              </button>
+              <button 
+                onClick={() => ungroupElements()} 
+                style={{ width: '100%', padding: '10px', background: '#333', border: '1px solid #555', color: 'white', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                DESAGRUPAR
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SINGLE PROPERTY EDITOR */}
         {selectedId && (
           <div style={{
             position: 'absolute',
@@ -266,6 +307,49 @@ export default function ScadaDesignerPage() {
                 />
               </div>
 
+              {/* PROP SETTINGS: TEXT AND SHAPES */}
+              {(selectedElement?.type === 'rect' || selectedElement?.type === 'circle' || selectedElement?.type === 'text') && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {selectedElement?.type !== 'text' && (
+                    <>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', color: '#666', display: 'block', marginBottom: '5px' }}>RELLENO</label>
+                        <input type="color" value={selectedElement?.props.fill || '#000000'} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, fill: e.target.value } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '2px', borderRadius: '4px', width: '100%', cursor: 'pointer' }} title="Relleno" />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', color: '#666', display: 'block', marginBottom: '5px' }}>TRAZO</label>
+                        <input type="color" value={selectedElement?.props.stroke || '#888888'} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, stroke: e.target.value } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '2px', borderRadius: '4px', width: '100%', cursor: 'pointer' }} title="Trazo" />
+                      </div>
+                    </>
+                  )}
+                  {selectedElement?.type === 'text' && (
+                    <>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', color: '#666', display: 'block', marginBottom: '5px' }}>COLOR</label>
+                        <input type="color" value={selectedElement?.props.fill || '#ffffff'} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, fill: e.target.value } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '2px', borderRadius: '4px', width: '100%', cursor: 'pointer' }} title="Texto" />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.7rem', color: '#666', display: 'block', marginBottom: '5px' }}>FUENTE PT</label>
+                        <input type="number" value={selectedElement?.props.fontSize || 14} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, fontSize: parseInt(e.target.value) || 14 } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '8px', borderRadius: '4px', width: '100%' }} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* PROP SETTINGS: LABEL OFFSETS (for all standard devices) */}
+              {selectedElement?.type !== 'pipe' && selectedElement?.type !== 'text' && selectedElement?.type !== 'rect' && selectedElement?.type !== 'circle' && (
+                <div>
+                    <label style={{ fontSize: '0.7rem', color: '#666', display: 'block', marginBottom: '5px', marginTop: '5px' }}>ETIQUETA (Offset X, Offset Y, Tamaño)</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '5px' }}>
+                      <input type="number" placeholder="Off X" value={selectedElement?.props.labelOffsetX || 0} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, labelOffsetX: parseInt(e.target.value) || 0 } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '8px', borderRadius: '4px', width: '100%', fontSize: '0.7rem' }} title="Offset X" />
+                      <input type="number" placeholder="Off Y" value={selectedElement?.props.labelOffsetY ?? ''} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, labelOffsetY: e.target.value === '' ? undefined : parseInt(e.target.value) } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '8px', borderRadius: '4px', width: '100%', fontSize: '0.7rem' }} title="Offset Y" />
+                      <input type="number" placeholder="Size" value={selectedElement?.props.labelFontSize || 8} onChange={(e) => updateElement(selectedId!, { props: { ...selectedElement?.props, labelFontSize: parseInt(e.target.value) || 8 } })} style={{ background: '#111', border: '1px solid #444', color: 'white', padding: '8px', borderRadius: '4px', width: '100%', fontSize: '0.7rem' }} title="Font Size" />
+                    </div>
+                </div>
+              )}
+
+
               {selectedElement?.type === 'pipe' && (
                 <div style={{ marginTop: '10px' }}>
                   <p style={{ fontSize: '0.75rem', color: '#aaa', lineHeight: '1.4', marginBottom: '10px', background: 'rgba(0, 229, 255, 0.1)', padding: '10px', borderRadius: '6px', borderLeft: '3px solid #00e5ff' }}>
@@ -294,6 +378,14 @@ export default function ScadaDesignerPage() {
                 </button>
                 </div>
               )}
+              {selectedElement?.groupId && (
+                <button 
+                  onClick={() => ungroupElements()}
+                  style={{ marginTop: '10px', width: '100%', padding: '10px', background: 'transparent', border: '1px solid #555', color: '#ccc', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  DESVINCULAR DE GRUPO
+                </button>
+              )}
+
             </div>
             <button 
               onClick={() => useLayoutStore.getState().removeElement(selectedId)}

@@ -15,10 +15,11 @@ interface MotorElementProps {
 
 export const MotorElement: React.FC<MotorElementProps> = ({ element, mode, plcValue }) => {
   const updateElement = useLayoutStore((state) => state.updateElement);
-  const selectElement = useLayoutStore((state) => state.selectElement);
-  const selectedId = useLayoutStore((state) => state.selectedId);
+  const setSelection = useLayoutStore((state) => state.setSelection);
+  const toggleSelection = useLayoutStore((state) => state.toggleSelection);
+  const selectedIds = useLayoutStore((state) => state.selectedIds);
 
-  const isSelected = selectedId === element.id;
+  const isSelected = selectedIds.includes(element.id);
   const isRunning = plcValue;
 
   const handleDragEnd = (e: any) => {
@@ -41,7 +42,11 @@ export const MotorElement: React.FC<MotorElementProps> = ({ element, mode, plcVa
       onClick={(e) => {
         if (mode === 'designer') {
           e.cancelBubble = true;
-          selectElement(element.id);
+          if (e.evt.shiftKey) {
+            toggleSelection(element.id);
+          } else {
+            setSelection([element.id]);
+          }
         } else if (mode === 'runtime') {
           e.cancelBubble = true;
           // El tag es el ID que usa el faceplate
@@ -98,12 +103,24 @@ export const MotorElement: React.FC<MotorElementProps> = ({ element, mode, plcVa
       {/* ETIQUETA / ID */}
       <Text
         text={element.props.name || element.id}
-        y={(element.height || 40) + 6}
+        x={element.props.labelOffsetX || 0}
+        y={(element.props.labelOffsetY !== undefined) ? element.props.labelOffsetY : (element.height || 40) + 6}
         width={element.width || 60}
         align="center"
         fill="rgba(255,255,255,0.75)"
-        fontSize={10}
+        fontSize={element.props.labelFontSize || 10}
         fontStyle="bold"
+        draggable={mode === 'designer'}
+        onDragEnd={(e) => {
+          e.cancelBubble = true;
+          updateElement(element.id, {
+            props: {
+              ...element.props,
+              labelOffsetX: snapToGrid(e.target.x()),
+              labelOffsetY: snapToGrid(e.target.y())
+            }
+          });
+        }}
       />
     </Group>
   );

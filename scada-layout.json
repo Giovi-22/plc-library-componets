@@ -3,48 +3,127 @@
     {
       "id": "MOTOR-823",
       "type": "motor",
-      "x": 660,
-      "y": 180,
+      "x": -760,
+      "y": 20,
       "rotation": 0,
-      "width": 60,
-      "height": 40,
+      "width": 80,
+      "height": 60,
       "props": {
         "name": "TQ_106",
         "tag": "TQ_106"
       }
     },
     {
-      "id": "PIPE-688",
-      "type": "pipe",
-      "x": 28,
-      "y": 5,
-      "rotation": 0,
-      "width": 100,
-      "height": 4,
-      "props": {
-        "name": "Nuevo pipe",
-        "thickness": 10,
-        "color": "#7f8c8d",
-        "tag": "TQ_106"
-      },
-      "points": [
-        380,
-        200,
-        640,
-        200
-      ]
-    },
-    {
       "id": "MOTOR-122",
       "type": "motor",
-      "x": 340,
-      "y": 180,
+      "x": 820,
+      "y": 400,
       "rotation": 0,
       "width": 60,
       "height": 40,
       "props": {
         "name": "Redler R1",
         "tag": "R1"
+      }
+    },
+    {
+      "id": "REDLER-213",
+      "type": "redler",
+      "x": 880,
+      "y": 500,
+      "rotation": 180,
+      "width": 640,
+      "height": 40,
+      "props": {
+        "name": "Redler-R1",
+        "tag": "R1"
+      }
+    },
+    {
+      "id": "ELEVATOR-439",
+      "type": "elevator",
+      "x": 995.1103000000032,
+      "y": -468.1024309790559,
+      "rotation": 0,
+      "width": 40,
+      "height": 1040,
+      "props": {
+        "name": "Elevador E2",
+        "tag": "E2"
+      }
+    },
+    {
+      "id": "MOTOR-244",
+      "type": "motor",
+      "x": 920,
+      "y": -480,
+      "rotation": 0,
+      "width": 60,
+      "height": 40,
+      "props": {
+        "name": "Elevador E2",
+        "tag": "E2"
+      }
+    },
+    {
+      "id": "TANK-765",
+      "type": "tank",
+      "x": -655.8156655172897,
+      "y": -332.381830284855,
+      "rotation": 0,
+      "width": 440,
+      "height": 440,
+      "props": {
+        "name": "Tanque 106"
+      }
+    },
+    {
+      "id": "PIPE-863",
+      "type": "pipe",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "width": 100,
+      "height": 10,
+      "props": {
+        "name": "Nuevo pipe",
+        "thickness": 10,
+        "color": "#7f8c8d"
+      },
+      "points": [
+        -440,
+        -340,
+        -440,
+        -400,
+        -840,
+        -400
+      ]
+    },
+    {
+      "id": "RECT-231",
+      "type": "rect",
+      "x": -780,
+      "y": 80,
+      "rotation": 0,
+      "width": 180,
+      "height": 60,
+      "props": {
+        "name": "Nuevo rect",
+        "fill": "#0a0a0a",
+        "stroke": "#05043e"
+      }
+    },
+    {
+      "id": "TEXT-772",
+      "type": "text",
+      "x": -760,
+      "y": -20,
+      "rotation": 0,
+      "width": 100,
+      "height": 30,
+      "props": {
+        "name": "TQ_106",
+        "fontSize": 22
       }
     }
   ]
